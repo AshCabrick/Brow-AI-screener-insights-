@@ -1,0 +1,3 @@
+mkdir brow-app && cd brow-app
+npm init -y
+npm install express

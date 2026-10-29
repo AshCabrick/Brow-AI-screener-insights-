@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BROW AI</title>
+<style>
+:root { --blue:#1d6bf3; --bg:#f6f8fb; --line:#e5e9f0; --text:#1f2937; --mute:#6b7280; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+button { font:inherit; cursor:pointer; }
+.topbar { display:flex; align-items:center; gap:24px; padding:12px 32px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+.brand { display:flex; align-items:center; gap:10px; font-size:20px; font-weight:700; background:#050b1a; color:#fff; padding:6px 14px; border-radius:12px; }
+.brand b { color:#22d3ee; }
+.topbar nav { display:flex; gap:6px; }
+.topbar nav button { background:none; border:0; padding:8px 14px; font-weight:600; color:var(--mute); border-radius:8px; }
+.topbar nav button.active, .topbar nav button:hover { color:var(--blue); background:#eef4ff; }
+.search { margin-left:auto; width:320px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#f9fafb; font:inherit; }
+.status { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--mute); white-space:nowrap; }
+.dot { width:9px; height:9px; border-radius:50%; background:#dc2626; }
+.dot.on { background:#16a34a; box-shadow:0 0 0 3px #dcfce7; }
+.avatar { width:38px; height:38px; border-radius:50%; background:var(--blue); color:#fff; display:grid; place-items:center; font-weight:700; }
+.layout { display:grid; grid-template-columns:310px 1fr; gap:24px; padding:28px 32px; max-width:1500px; margin:0 auto; }
+.side h2 { margin:0 0 18px; font-size:22px; }
+.side-item { width:100%; display:flex; gap:12px; align-items:center; text-align:left; padding:16px; margin-bottom:10px; background:#fff; border:1px solid var(--line); border-radius:10px; font-size:16px; }
+.side-item.on { background:#eef4ff; border-color:#9dbcf7; color:var(--blue); font-weight:600; }
+.side hr { border:0; border-top:1px solid var(--line); margin:22px 60px; }
+.row-between { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+h1 { font-size:26px; font-weight:500; margin:0 0 20px; }
+.primary { background:var(--blue); color:#fff; border:0; padding:12px 22px; border-radius:8px; font-size:16px; }
+.primary:disabled { opacity:.6; }
+.ghost { border:1px solid var(--line); font-size:14px; padding:6px 12px; border-radius:8px; background:#fff; }
+.ghost.on { background:#eef4ff; color:var(--blue); border-color:#9dbcf7; }
+.tabs { display:flex; gap:18px; margin-bottom:24px; flex-wrap:wrap; }
+.tab { flex:1; min-width:170px; display:flex; justify-content:space-between; align-items:center; text-align:left; padding:20px 16px; background:#fff; border:1px solid var(--line); border-radius:10px; font-size:17px; }
+.tab i { font-style:normal; font-size:30px; }
+.tab.on { background:#eef4ff; border-color:#a9c4f7; }
+.sub { font-weight:500; font-size:19px; margin:10px 0 14px; }
+.card { display:flex; align-items:center; gap:18px; padding:22px; background:#fff; border:1px solid var(--line); border-radius:10px; margin-bottom:16px; cursor:pointer; transition:box-shadow .15s; }
+.card:hover { box-shadow:0 4px 18px rgba(20,60,140,.08); }
+.card .icon { width:48px; height:48px; border-radius:50%; background:#e0f2f1; display:grid; place-items:center; font-size:20px; flex:none; }
+.card .body { flex:1; min-width:0; }
+.card .ttl { font-size:19px; font-weight:500; }
+.card p { margin:6px 0; color:#4b5563; }
+.card small { color:var(--mute); }
+.actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+.boost { background:none; border:0; font-size:17px; color:#555; padding:8px 14px; border-radius:20px; }
+.boost.on { background:#eef4ff; color:var(--blue); }
+.overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); display:grid; place-items:center; z-index:20; }
+.modal { background:#fff; padding:26px; border-radius:14px; width:460px; max-width:94vw; display:flex; flex-direction:column; gap:12px; }
+.modal.wide { width:min(980px,94vw); max-height:86vh; overflow:auto; display:block; }
+.modal input { padding:12px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+.tbl { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+.tbl th { text-align:left; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); padding:12px 14px; background:#fafbfc; }
+.tbl td { padding:12px 14px; border-top:1px solid var(--line); }
+.up { color:#16a34a; font-weight:600; } .down { color:#dc2626; font-weight:600; }
+.pill { display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:20px; font-size:12px; background:#fff; }
+.pill.big { font-size:14px; padding:8px 16px; }
+.pill.bullish { background:#dcfce7; color:#166534; } .pill.bearish { background:#fee2e2; color:#991b1b; } .pill.neutral { background:#f1f5f9; }
+.pill.filter { background:#eef4ff; border-color:#c7dafb; color:var(--blue); margin:0 6px 6px 0; }
+.ai, .insights { max-width:1300px; margin:0 auto; padding:28px 32px; }
+.ai-box { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px; }
+.ai-row { display:flex; gap:12px; }
+.ai-row input { flex:1; padding:14px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:16px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip { background:#f1f5f9; border:1px solid var(--line); padding:7px 14px; border-radius:20px; font-size:14px; }
+.chip:hover { background:#eef4ff; color:var(--blue); }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; margin-top:18px; }
+.panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px; }
+.panel h3 { margin:0 0 14px; font-weight:600; }
+.li { display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--line); }
+.li:first-of-type { border-top:0; }
+.bar { display:flex; height:14px; border-radius:8px; overflow:hidden; margin-bottom:10px; }
+.empty { text-align:center; padding:40px; color:var(--mute); }
+.fail { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:12px; padding:28px; text-align:center; margin:16px 0; }
+.fail code { background:#fee2e2; padding:2px 6px; border-radius:4px; }
+.fail .primary { margin-top:14px; background:#dc2626; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 18px; border-radius:10px; z-index:30; font-size:14px; }
+@media (max-width:900px){ .layout{grid-template-columns:1fr;} .search{display:none;} .ai-row{flex-direction:column;} }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand" id="logo"></div>
+  <nav id="nav"></nav>
+  <input class="search" id="search" placeholder="Search screeners" />
+  <div class="status"><span class="dot" id="dot"></span><span id="stxt">Connecting...</span></div>
+  <div class="avatar">A</div>
+</header>
+<div id="view"></div>
+<div id="toast"></div>
+
+<script>
+(() => {
+  // ============ CONFIG ============
+  const BACKEND = "http://localhost:4000";            // change if your server uses another port
+  const SERVER = location.port === "4000" ? "" : BACKEND;
+  const API = SERVER + "/api";
+
+  let USER = "demo";
+  try {
+    USER = localStorage.getItem("brow_uid") || "user" + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem("brow_uid", USER);
+  } catch (_) {}
+
+  // ============ API ============
+  const call = async (path, opts = {}) => {
+    const r = await fetch(API + path, {
+      ...opts, cache: "no-store",
+      headers: { "Content-Type": "application/json", "x-user-id": USER },
+    });
+    if (!r.ok) throw new Error((await r.text()) || r.statusText);
+    return r.json();
+  };
+  const api = {
+    health: () => call("/health"),
+    screeners: (tab, q) => call("/screeners?tab=" + encodeURIComponent(tab) + "&q=" + encodeURIComponent(q || "")),
+    create: (b) => call("/screeners", { method: "POST", body: JSON.stringify(b) }),
+    act: (id, action) => call("/screeners/" + id + "/" + action, { method: "POST" }),
+    run: (id) => call("/screeners/" + id + "/run"),
+    scan: (q) => call("/scan?q=" + encodeURIComponent(q)),
+    live: () => call("/live-scanner"),
+    insights: () => call("/insights"),
+  };
+
+  // ============ HELPERS ============
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : n);
+  const sign = (n) => (n >= 0 ? "+" : "") + n;
+  const cls = (n) => (n >= 0 ? "up" : "down");
+  const dateFmt = (d) => new Date(d).toLocaleDateString("en-IN", { month: "short", day: "2-digit", year: "numeric" });
+  const timeFmt = (d) => new Date(d).toLocaleTimeString("en-IN");
+  let toastTimer;
+  const toast = (m) => {
+    $("toast").innerHTML = '<div class="toast">' + esc(m) + "</div>";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => ($("toast").innerHTML = ""), 2200);
+  };
+
+  // ============ CONSTANTS ============
+  const NAV = ["Home", "Screeners", "Insights"];
+  const SIDEBAR = [
+    ["explore", "Explore", "🔥"], ["live", "Live Market Scanner", "📡"], ["brow", "By BROW", "✳️"],
+    ["following", "Following", "👥"], ["boosted", "Boosted", "🚀"], ["shared", "Shared With Me", "➕"],
+  ];
+  const TABS = [
+    ["all", "All Screeners", "🔍"], ["trending", "Trending Screeners", "⚡"], ["latest", "Latest Screeners", "⭐"],
+    ["editors", "Editor's Choice", "🏅"], ["contributors", "Top Contributors", "🔼"],
+  ];
+  const CHIPS = ["Top Gainers", "Top Losers", "High Volume", "Breakouts", "Oversold", "Momentum",
+                 "large cap banking above 500", "mid cap IT", "pharma under 2000"];
+  const EMPTY_MSG = {
+    following: "You are not following anyone yet. Tap Follow on a screener.",
+    boosted: "You have not boosted any screeners yet.",
+    saved: "No saved screeners yet. Tap Save on a screener.",
+    shared: "Nothing has been shared with you yet.",
+    brow: "No BROW screeners yet.",
+  };
+
+  const LOGO = '<svg width="36" height="36" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00F0FF"/><stop offset="1" stop-color="#0050FF"/></linearGradient></defs><g stroke="url(#lg)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M30 14 H60 a20 20 0 0 1 0 40 H38"/><path d="M36 25 H58 a9 9 0 0 1 0 18 H42"/><path d="M36 56 H62 a20 20 0 0 1 0 40 H30"/><path d="M34 68 H58 a8 8 0 0 1 0 16 H40"/></g><g fill="url(#lg)"><circle cx="20" cy="15" r="5"/><circle cx="22" cy="38" r="5"/><circle cx="20" cy="50" r="5"/><circle cx="26" cy="60" r="5"/><circle cx="22" cy="72" r="5"/><circle cx="20" cy="86" r="5"/><circle cx="28" cy="96" r="5"/></g></svg><span>BROW <b>AI</b></span>';
+
+  // ============ STATE ============
+  const S = { page: "Screeners", side: "explore", tab: "all", q: "", list: [], rows: [], insights: null,
+              loading: false, failed: false, open: null, modal: false, aiQuery: "", scan: null, scanning: false };
+  let timer = null, debounce = null;
+
+  function setOnline(v) {
+    $("dot").className = "dot" + (v ? " on" : "");
+    $("stxt").textContent = v ? "Server online" : "Server offline";
+  }
+
+  // ============ DATA FLOW ============
+  async function load(silent) {
+    if (!silent) { S.loading = true; render(); }
+    try {
+      if (S.page === "Screeners") {
+        if (S.side === "live") S.rows = await api.live();
+        else S.list = await api.screeners(S.side === "explore" ? S.tab : S.side, S.q);
+      } else if (S.page === "Insights") {
+        S.insights = await api.insights();
+      }
+      S.failed = false;
+      setOnline(true);
+    } catch (e) {
+      console.error("BROW load error:", e);
+      S.failed = true;
+      setOnline(false);
+    }
+    S.loading = false;
+    render();
+  }
+
+  async function pingHealth() {
+    try { await api.health(); setOnline(true); } catch { setOnline(false); }
+  }
+
+  function schedule() {
+    clearInterval(timer);
+    if (S.page === "Insights") timer = setInterval(() => load(true), 5000);
+    else if (S.page === "Screeners" && S.side === "live") timer = setInterval(() => load(true), 4000);
+    else timer = setInterval(pingHealth, 10000);
+  }
+  function go() { S.failed = false; schedule(); renderNav(); load(); }
+
+  async function runScan(q) {
+    q = (q || "").trim();
+    if (!q) return toast("Type a query first");
+    S.aiQuery = q; S.scanning = true; render();
+    try { S.scan = Object.assign({ q: q }, await api.scan(q)); setOnline(true); }
+    catch { setOnline(false); toast("Scan failed. Is the server running?"); }
+    S.scanning = false; render();
+  }
+
+  // ============ VIEWS ============
+  function failBox() {
+    return '<div class="fail"><b>Cannot reach the server.</b><br>Start it with <code>npm start</code> in your project folder, ' +
+      'then click Retry.<br><small>Trying: ' + esc(API) + '</small><br><button class="primary" data-a="retry">Retry</button></div>';
+  }
+
+  function resultTable(rows) {
+    return '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Symbol</th><th>Sector</th><th>Price</th><th>Change %</th><th>Volume</th><th>PE</th><th>Regime</th></tr></thead><tbody>' +
+      rows.map((r) => "<tr><td><b>" + esc(r.symbol) + "</b><br><small>" + esc(r.name) + "</small></td><td>" + esc(r.sector) +
+        "</td><td>₹" + Number(r.price).toLocaleString("en-IN") + '</td><td class="' + cls(r.change) + '">' + sign(r.change) +
+        "%</td><td>" + (r.volume / 1e6).toFixed(2) + "M</td><td>" + r.pe + '</td><td><span class="pill">' + esc(r.regime) + "</span></td></tr>").join("") +
+      (rows.length === 0 ? '<tr><td colspan="7" class="empty">No matches</td></tr>' : "") + "</tbody></table></div>";
+  }
+
+  function homeView() {
+    const sc = S.scan, filters = sc ? Object.entries(sc.filters || {}) : [];
+    return '<div class="ai"><h1>AI Screener</h1><div class="ai-box"><div class="ai-row">' +
+      '<input id="ai-input" value="' + esc(S.aiQuery) + '" placeholder="Search symbol or query, e.g. large cap banking above 500" />' +
+      '<button class="primary" data-a="scan" ' + (S.scanning ? "disabled" : "") + ">" + (S.scanning ? "Scanning..." : "Run Scan") + "</button></div>" +
+      '<div class="chips">' + CHIPS.map((c) => '<button class="chip" data-a="chip" data-v="' + esc(c) + '">' + esc(c) + "</button>").join("") + "</div></div>" +
+      (sc ? '<div class="row-between" style="margin-bottom:12px"><div><b>' + sc.results.length + "</b> instruments matched &ldquo;" + esc(sc.q) +
+        '&rdquo;</div><button class="ghost" data-a="savescan">🔖 Save as screener</button></div><div style="margin-bottom:10px">' +
+        (filters.length ? filters.map((kv) => '<span class="pill filter">' + esc(kv[0]) + ": " + esc(kv[1]) + "</span>").join("")
+          : '<span class="pill">No filters detected, showing everything</span>') + "</div>" + resultTable(sc.results)
+        : '<div class="empty">Run a scan or tap a chip above to get started.</div>') + "</div>";
+  }
+
+  function screenersView() {
+    const sideHtml = SIDEBAR.map((x) => '<button class="side-item ' + (S.side === x[0] ? "on" : "") + '" data-a="side" data-v="' + x[0] + '"><span>' + x[2] + "</span>" + x[1] + "</button>").join("");
+    const tabsHtml = S.side === "explore" ? '<div class="tabs">' + TABS.map((x) => '<button class="tab ' + (S.tab === x[0] ? "on" : "") + '" data-a="tab" data-v="' + x[0] + '"><span>' + x[1] + "</span><i>" + x[2] + "</i></button>").join("") + "</div>" : "";
+
+    let content;
+    if (S.failed) {
+      content = failBox();
+    } else if (S.side === "live") {
+      content = '<h3 class="sub">Live prices <small style="color:var(--mute);font-weight:400">refreshes every 4s</small></h3>' +
+        (S.loading && !S.rows.length ? '<div class="empty">Loading...</div>' : resultTable(S.rows));
+    } else {
+      const sub = S.side === "explore" ? (TABS.find((t) => t[0] === S.tab) || [])[1]
+        : (SIDEBAR.find((x) => x[0] === S.side) || ["", "My Saved Screeners"])[1];
+      content = '<h3 class="sub">' + esc(sub) + "</h3>" +
+        (S.loading && S.list.length === 0 ? '<div class="empty">Loading...</div>' : "") +
+        (!S.loading && S.list.length === 0 ? '<div class="empty">' + esc(S.q ? "No screeners match your search." : EMPTY_MSG[S.side] || "No screeners here yet.") + "</div>" : "") +
+        S.list.map((s) => '<div class="card" data-a="open" data-id="' + s.id + '"><div class="icon">' + (s.editors ? "⬆️" : "₹") +
+          '</div><div class="body"><div class="ttl">' + esc(s.title) + "</div>" + (s.description ? "<p>" + esc(s.description) + "</p>" : "") +
+          "<small>" + esc(s.author) + " • " + dateFmt(s.date) + '</small></div><div class="actions">' +
+          '<button class="ghost ' + (s.following ? "on" : "") + '" data-a="follow" data-id="' + s.id + '">' + (s.following ? "✓ Following" : "＋ Follow") + "</button>" +
+          '<button class="ghost ' + (s.saved ? "on" : "") + '" data-a="save" data-id="' + s.id + '">' + (s.saved ? "🔖 Saved" : "🔖 Save") + "</button>" +
+          '<button class="boost ' + (s.boosted ? "on" : "") + '" data-a="boost" data-id="' + s.id + '">🚀 ' + fmt(s.boosts) + "</button></div></div>").join("");
+    }
+
+    const openModal = S.open ? '<div class="overlay" data-a="closeoverlay"><div class="modal wide"><div class="row-between" style="margin-bottom:12px"><div><h2 style="margin:0">' +
+      esc(S.open.screener.title) + '</h2><small style="color:var(--mute)">' + S.open.results.length + ' matching instruments</small></div><div class="actions">' +
+      '<button class="ghost" data-a="save" data-id="' + S.open.screener.id + '">🔖 Save</button><button class="ghost" data-a="closeopen">✕ Close</button></div></div>' +
+      '<div style="margin-bottom:10px">' + Object.entries(S.open.screener.filters || {}).map((kv) => '<span class="pill filter">' + esc(kv[0]) + ": " + esc(kv[1]) + "</span>").join("") +
+      "</div>" + resultTable(S.open.results) + "</div></div>" : "";
+
+    const createModal = S.modal ? '<div class="overlay" data-a="closeoverlay"><div class="modal"><h2 style="margin:0">Create Screener</h2>' +
+      '<input id="c-title" placeholder="Screener name" /><input id="c-desc" placeholder="Description (optional)" />' +
+      '<input id="c-query" placeholder="Query, e.g. large cap banking above 500" /><button class="primary" data-a="create">Create</button></div></div>' : "";
+
+    return '<div class="layout"><aside class="side"><h2>🎯 Screeners</h2>' + sideHtml + "<hr>" +
+      '<button class="side-item ' + (S.side === "saved" ? "on" : "") + '" data-a="side" data-v="saved"><span>💾</span>My Saved Screeners</button></aside>' +
+      '<main class="main"><div class="row-between"><h1>' + (S.side === "live" ? "Live Market Scanner" : "Explore") +
+      '</h1><button class="primary" data-a="newmodal">＋ Create Screener</button></div>' + tabsHtml + content + "</main>" + openModal + createModal + "</div>";
+  }
+
+  function insightsView() {
+    if (S.failed) return '<div class="insights"><h1>Insights</h1>' + failBox() + "</div>";
+    const d = S.insights;
+    if (!d) return '<div class="empty">Loading insights...</div>';
+    const total = d.breadth.advancing + d.breadth.declining + d.breadth.unchanged || 1;
+    const list = (title, items) => '<div class="panel"><h3>' + title + "</h3>" + (items.length ? items.map((i) =>
+      '<div class="li"><span><b>' + esc(i.symbol) + "</b> <small>₹" + i.price + '</small></span><span class="' + cls(i.change) + '">' + sign(i.change) + "%</span></div>").join("")
+      : '<div class="empty" style="padding:12px">None right now</div>') + "</div>";
+    return '<div class="insights"><div class="row-between"><h1>Insights</h1><div class="actions"><small style="color:var(--mute)">Updated ' + timeFmt(d.updatedAt) +
+      ' · auto-refresh 5s</small><span class="pill big ' + d.sentiment.toLowerCase() + '">Market Sentiment: ' + esc(d.sentiment) + "</span></div></div>" +
+      '<div class="panel"><h3>Market Breadth</h3><div class="bar"><i style="width:' + (d.breadth.advancing / total) * 100 + '%;background:#16a34a"></i><i style="width:' +
+      (d.breadth.unchanged / total) * 100 + '%;background:#cbd5e1"></i><i style="width:' + (d.breadth.declining / total) * 100 + '%;background:#dc2626"></i></div><small>' +
+      d.breadth.advancing + " advancing • " + d.breadth.declining + " declining • " + d.breadth.unchanged + " unchanged</small></div>" +
+      '<div class="grid">' + list("Top Gainers", d.topGainers) + list("Top Losers", d.topLosers) + list("Volume Shockers", d.volumeShockers) +
+      '<div class="panel"><h3>Sector Performance</h3>' + d.sectors.map((s) => '<div class="li"><span>' + esc(s.sector) + ' <small style="color:var(--mute)">(' + s.count +
+        ')</small></span><span class="' + cls(s.avgChange) + '">' + sign(s.avgChange) + "%</span></div>").join("") + "</div>" +
+      '<div class="panel"><h3>Regimes</h3>' + Object.entries(d.regimes).map((kv) => '<div class="li"><span>' + esc(kv[0]) + "</span><b>" + kv[1] + "</b></div>").join("") + "</div></div></div>";
+  }
+
+  // ============ RENDER ============
+  function renderNav() {
+    $("nav").innerHTML = NAV.map((n) => '<button class="' + (S.page === n ? "active" : "") + '" data-a="nav" data-v="' + n + '">' + n + "</button>").join("");
+    $("search").style.visibility = S.page === "Screeners" ? "visible" : "hidden";
+  }
+
+  function render() {
+    const keep = {};
+    ["c-title", "c-desc", "c-query", "ai-input"].forEach((id) => { const el = $(id); if (el) keep[id] = el.value; });
+    const focusId = document.activeElement && document.activeElement.id;
+    $("view").innerHTML = S.page === "Home" ? homeView() : S.page === "Screeners" ? screenersView() : insightsView();
+    Object.keys(keep).forEach((id) => { if ($(id)) $(id).value = keep[id]; });
+    if (focusId && keep[focusId] !== undefined && $(focusId)) $(focusId).focus();
+  }
+
+  async function refreshAfterAction(id) {
+    await load(true);
+    if (S.open && S.open.screener.id === id) S.open = await api.run(id);
+    render();
+  }
+
+  // ============ EVENTS ============
+  document.addEventListener("click", async (e) => {
+    const el = e.target.closest("[data-a]");
+    if (!el) return;
+    const a = el.dataset.a, v = el.dataset.v, id = el.dataset.id;
+    try {
+      switch (a) {
+        case "nav": S.page = v; S.open = null; S.modal = false; go(); break;
+        case "side": S.side = v; go(); break;
+        case "tab": S.tab = v; go(); break;
+        case "retry": go(); break;
+        case "boost": { const u = await api.act(id, "boost"); toast(u.boosted ? "Boosted 🚀" : "Boost removed"); await refreshAfterAction(id); break; }
+        case "save": { const u = await api.act(id, "save"); toast(u.saved ? "Saved" : "Removed from saved"); await refreshAfterAction(id); break; }
+        case "follow": { const u = await api.act(id, "follow"); toast(u.following ? "Following " + u.author : "Unfollowed " + u.author); await refreshAfterAction(id); break; }
+        case "open": S.open = await api.run(id); render(); break;
+        case "closeopen": S.open = null; render(); break;
+        case "closeoverlay": if (e.target === el) { S.open = null; S.modal = false; render(); } break;
+        case "newmodal": S.modal = true; render(); $("c-title").focus(); break;
+        case "create": {
+          const title = $("c-title").value.trim();
+          if (!title) { toast("Please enter a screener name"); break; }
+          await api.create({ title: title, description: $("c-desc").value, query: $("c-query").value });
+          S.modal = false; S.side = "explore"; S.tab = "latest"; S.q = ""; $("search").value = "";
+          toast("Screener created"); go(); break;
+        }
+        case "scan": runScan($("ai-input").value); break;
+        case "chip": S.aiQuery = v; runScan(v); break;
+        case "savescan": {
+          const title = prompt("Name for this screener:", S.scan.q);
+          if (!title) break;
+          await api.create({ title: title, query: S.scan.q });
+          toast("Saved. See Screeners > Explore > Latest."); break;
+        }
+      }
+    } catch (err) { setOnline(false); toast("Request failed: " + err.message); }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target.id === "ai-input" && e.key === "Enter") runScan(e.target.value);
+    if (e.target.id === "c-query" && e.key === "Enter") document.querySelector('[data-a="create"]').click();
+    if (e.key === "Escape" && (S.open || S.modal)) { S.open = null; S.modal = false; render(); }
+  });
+
+  $("search").addEventListener("input", (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      S.q = e.target.value.trim();
+      if (S.page === "Screeners" && S.side !== "live") load(true);
+    }, 300);
+  });
+
+  // ============ START ============
+  $("logo").innerHTML = LOGO;
+  go();
+  pingHealth();
+})();
+</script>
+</body>
+</html>
